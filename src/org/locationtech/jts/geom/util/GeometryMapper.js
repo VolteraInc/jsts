@@ -36,6 +36,8 @@ export default class GeometryMapper {
    * <tt>null</tt> and empty values returned from the mapping operation
    * are discarded.
    * 
+   * TODO: typeof arguement 0 === object is a hack to allow for cjs
+   * 
    * @param geom the geometry to map
    * @param emptyDim the dimension of empty geometry to create
    * @param op the mapping operation
@@ -43,7 +45,7 @@ export default class GeometryMapper {
    */
    static flatMap()
    {
-    if (arguments[0] instanceof Geometry && typeof(arguments[1]) === 'number' && hasInterface(arguments[2], MapOp)) {
+    if ((arguments[0] instanceof Geometry || typeof(arguments[0]) == "object") && typeof(arguments[1]) === 'number' && hasInterface(arguments[2], MapOp)) {
       const mapped = new ArrayList();
       const geom = arguments[0]
       const op = arguments[2]
@@ -56,7 +58,7 @@ export default class GeometryMapper {
         return mapped.get(0);
       return geom.getFactory().buildGeometry(mapped);
 
-    } else if (arguments[0] instanceof Geometry && hasInterface(arguments[1], MapOp) && arguments[2] instanceof ArrayList) {
+    } else if ((arguments[0] instanceof Geometry || typeof(arguments[0]) == "object") && hasInterface(arguments[1], MapOp) && arguments[2] instanceof ArrayList) {
       const geom = arguments[0]
       const op = arguments[1]
       const mapped = arguments[2]
