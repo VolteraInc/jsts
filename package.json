@@ -62,5 +62,17 @@
   "main": "dist/jsts.min.js",
   "dependencies": {
     "@types/openlayers": "^4.6.18"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "printWidth": 120,
+    "jsxSingleQuote": true,
+    "singleQuote": true,
+    "semi": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "bracketSpacing": true,
+    "endOfLine": "lf"
   }
 }
