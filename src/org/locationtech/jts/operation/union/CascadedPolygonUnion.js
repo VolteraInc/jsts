@@ -2,12 +2,12 @@ import PolygonExtracter from '../../geom/util/PolygonExtracter.js'
 import OverlapUnion from './OverlapUnion.js'
 import STRtree from '../../index/strtree/STRtree.js'
 import Geometry from '../../geom/Geometry.js'
+import List from '../../../../../java/util/List.js'
+import IllegalStateException from '../../../../../java/lang/IllegalStateException.js'
 import hasInterface from '../../../../../hasInterface.js'
 import GeometryFactory from '../../geom/GeometryFactory.js'
 import Polygonal from '../../geom/Polygonal.js'
 import ArrayList from '../../../../../java/util/ArrayList.js'
-import List from '../../../../../java/util/List.js'
-import IllegalStateException from '../../../../../java/lang/IllegalStateException.js'
 export default class CascadedPolygonUnion {
   constructor() {
     CascadedPolygonUnion.constructor_.apply(this, arguments)
@@ -19,14 +19,6 @@ export default class CascadedPolygonUnion {
     this._inputPolys = polys
     if (this._inputPolys === null) this._inputPolys = new ArrayList()
   }
-  static restrictToPolygons(g) {
-    if (hasInterface(g, Polygonal)) 
-      return g
-    
-    const polygons = PolygonExtracter.getPolygons(g)
-    if (polygons.size() === 1) return polygons.get(0)
-    return g.getFactory().createMultiPolygon(GeometryFactory.toPolygonArray(polygons))
-  }
   static getGeometry(list, index) {
     if (index >= list.size()) return null
     return list.get(index)
@@ -34,6 +26,14 @@ export default class CascadedPolygonUnion {
   static union(polys) {
     const op = new CascadedPolygonUnion(polys)
     return op.union()
+  }
+  static restrictToPolygons(g) {
+    if (hasInterface(g, Polygonal)) 
+      return g
+    
+    const polygons = PolygonExtracter.getPolygons(g)
+    if (polygons.size() === 1) return polygons.get(0)
+    return g.getFactory().createMultiPolygon(GeometryFactory.toPolygonArray(polygons))
   }
   reduceToGeometries(geomTree) {
     const geoms = new ArrayList()
@@ -82,14 +82,6 @@ export default class CascadedPolygonUnion {
       }
     }
   }
-  repeatedUnion(geoms) {
-    let union = null
-    for (let i = geoms.iterator(); i.hasNext(); ) {
-      const g = i.next()
-      if (union === null) union = g.copy(); else union = union.union(g)
-    }
-    return union
-  }
   unionSafe(g0, g1) {
     if (g0 === null && g1 === null) return null
     if (g0 === null) return g1.copy()
@@ -105,21 +97,6 @@ export default class CascadedPolygonUnion {
     const geoms = this.reduceToGeometries(geomTree)
     const union = this.binaryUnion(geoms)
     return union
-  }
-  bufferUnion() {
-    if (arguments.length === 1) {
-      const geoms = arguments[0]
-      const factory = geoms.get(0).getFactory()
-      const gColl = factory.buildGeometry(geoms)
-      const unionAll = gColl.buffer(0.0)
-      return unionAll
-    } else if (arguments.length === 2) {
-      const g0 = arguments[0], g1 = arguments[1]
-      const factory = g0.getFactory()
-      const gColl = factory.createGeometryCollection([g0, g1])
-      const unionAll = gColl.buffer(0.0)
-      return unionAll
-    }
   }
 }
 CascadedPolygonUnion.STRTREE_NODE_CAPACITY = 4

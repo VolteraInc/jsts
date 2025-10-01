@@ -61,10 +61,4 @@ export default class UnionInteracting {
     const overallUnion = GeometryCombiner.combine(union, disjoint0, disjoint1)
     return overallUnion
   }
-  bufferUnion(g0, g1) {
-    const factory = g0.getFactory()
-    const gColl = factory.createGeometryCollection([g0, g1])
-    const unionAll = gColl.buffer(0.0)
-    return unionAll
-  }
 }

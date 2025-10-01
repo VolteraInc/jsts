@@ -1,7 +1,8 @@
 import fs from 'fs'
 import replace from '@rollup/plugin-replace'
-import babel from '@rollup/plugin-babel'
-// import terser from '@rollup/plugin-terser'
+import terser from '@rollup/plugin-terser'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json'))
 const license = fs.readFileSync('./license.txt', { encoding: 'utf8' })
@@ -16,20 +17,12 @@ export default {
     sourcemap: true
   },
   plugins: [
+    nodeResolve(),
+    commonjs(),
     replace({
       npm_package_version: packageJson.version,
       // preventAssignment: true
     }),
-    babel({
-      exclude: 'node_modules/**',
-      presets: [['@babel/env', {
-        targets: {
-          browsers: ['>2%', 'not dead']
-        }
-      }]],
-      babelrc: false,
-      // babelHelpers: 'bundled'
-    }),
-    // terser()
+    terser()
   ]
 }
