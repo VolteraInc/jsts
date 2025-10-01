@@ -72,8 +72,8 @@ export default class CubicBezierCurve {
    */
 
   static constructor_() {
-
-    if (arguments[0] instanceof Geometry && typeof(arguments[1]) === 'number' && typeof(arguments[2]) === 'number') {
+    // TODO: when we compile ES, we can remove the typeof object check. for cjs the instance could be not geometry.
+    if ((arguments[0] instanceof Geometry || typeof(arguments[0]) == 'object') && typeof(arguments[1]) === 'number' && typeof(arguments[2]) === 'number') {
       const geom = arguments[0]
       const alpha = arguments[1]
       const skew = arguments[2]
@@ -83,7 +83,7 @@ export default class CubicBezierCurve {
       this.alpha = alpha;
       this.skew  = skew;
 
-    } else if (arguments[0] instanceof Geometry && typeof(arguments[1]) === 'number') {
+    } else if ((arguments[0] instanceof Geometry || typeof(arguments[0]) == 'object') && typeof(arguments[1]) === 'number') {
       const geom = arguments[0]
       const alpha = arguments[1]
       this.inputGeom = geom;
@@ -91,7 +91,7 @@ export default class CubicBezierCurve {
       if ( alpha < 0.0 ) alpha = 0;
       this.alpha = alpha;
 
-    } else if (arguments[0] instanceof Geometry && arguments[1] instanceof Geometry) {
+    } else if ((arguments[0] instanceof Geometry || typeof(arguments[0]) == 'object') && (arguments[1] instanceof Geometry || typeof(arguments[1]) == 'object')) {
       const geom = arguments[0]
       const controlPoints = arguments[1]
       this.inputGeom = geom;

@@ -36,13 +36,6 @@ export default class LineMerger {
       }
     }
   }
-  buildEdgeStringsForObviousStartNodes() {
-    this.buildEdgeStringsForNonDegree2Nodes()
-  }
-  getMergedLineStrings() {
-    this.merge()
-    return this._mergedLineStrings
-  }
   buildEdgeStringsStartingAt(node) {
     for (let i = node.getOutEdges().iterator(); i.hasNext(); ) {
       const directedEdge = i.next()
@@ -92,7 +85,7 @@ export default class LineMerger {
           this.addLineString(component)
         
       }
-      
+      ;
     } else if (hasInterface(arguments[0], Collection)) {
       const geometries = arguments[0]
       this._mergedLineStrings = null
@@ -104,5 +97,12 @@ export default class LineMerger {
   }
   buildEdgeStringsForIsolatedLoops() {
     this.buildEdgeStringsForUnprocessedNodes()
+  }
+  buildEdgeStringsForObviousStartNodes() {
+    this.buildEdgeStringsForNonDegree2Nodes()
+  }
+  getMergedLineStrings() {
+    this.merge()
+    return this._mergedLineStrings
   }
 }

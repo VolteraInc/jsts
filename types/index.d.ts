@@ -67,11 +67,7 @@ declare namespace jsts {
     }
 
     export class Distance {
-      static pointToLinePerpendicular(
-        pt: Coordinate,
-        lineStart: Coordinate,
-        lineEnd: Coordinate
-      ): number;
+      static pointToLinePerpendicular(pt: Coordinate, lineStart: Coordinate, lineEnd: Coordinate): number;
     }
 
     /**
@@ -182,21 +178,13 @@ declare namespace jsts {
        * the result of rounding points which lie on the line,
        * but not safe to use for truncated points.
        */
-      static computeEdgeDistance(
-        p: Coordinate,
-        p0: Coordinate,
-        p1: Coordinate
-      ): number;
+      static computeEdgeDistance(p: Coordinate, p0: Coordinate, p1: Coordinate): number;
 
       /**
        * This function is non-robust, since it may compute the square of large numbers.
        * Currently not sure how to improve this.
        */
-      static nonRobustComputeEdgeDistance(
-        p: Coordinate,
-        p1: Coordinate,
-        p2: Coordinate
-      ): number;
+      static nonRobustComputeEdgeDistance(p: Coordinate, p1: Coordinate, p2: Coordinate): number;
 
       /**
        * Force computed intersection to be rounded to a given precision model.
@@ -217,12 +205,7 @@ declare namespace jsts {
        * This function computes both the boolean value of the hasIntersection test
        * and the (approximate) value of the intersection point itself (if there is one).
        */
-      computeIntersection(
-        p1: Coordinate,
-        p2: Coordinate,
-        p3: Coordinate,
-        p4: Coordinate
-      ): void;
+      computeIntersection(p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate): void;
 
       toString(): string;
 
@@ -293,10 +276,7 @@ declare namespace jsts {
        * @returns the intIndex'th intersection point in the direction
        * of the specified input line segment
        */
-      getIntersectionAlongSegment(
-        segmentIndex: number,
-        intIndex: number
-      ): Coordinate;
+      getIntersectionAlongSegment(segmentIndex: number, intIndex: number): Coordinate;
 
       /**
        * Computes the index (order) of the intIndex'th intersection point
@@ -337,12 +317,7 @@ declare namespace jsts {
        */
       computeIntersection(p: Coordinate, p1: Coordinate, p2: Coordinate): void;
 
-      computeIntersection(
-        p: Coordinate,
-        p1: Coordinate,
-        p2: Coordinate,
-        p3: Coordinate
-      ): void;
+      computeIntersection(p: Coordinate, p1: Coordinate, p2: Coordinate, p3: Coordinate): void;
     }
 
     namespace locate {
@@ -522,17 +497,9 @@ declare namespace jsts {
     }
 
     export class GeometryGraph {
-      constructor(
-        argIndex: number,
-        parentGeometry: Geometry,
-        boundaryNodeRule?: BoundaryNodeRule
-      );
+      constructor(argIndex: number, parentGeometry: Geometry, boundaryNodeRule?: BoundaryNodeRule);
 
-      computeEdgeIntersections(
-        graph: GeometryGraph,
-        li: LineIntersector,
-        includeProper: boolean
-      ): SegmentIntersector;
+      computeEdgeIntersections(graph: GeometryGraph, li: LineIntersector, includeProper: boolean): SegmentIntersector;
       findEdge(line: LineString): Edge;
       getEdgeIterator(): JstsIterator<Edge>;
     }
@@ -592,10 +559,7 @@ declare namespace jsts {
        */
       constructor(precisionModel?: PrecisionModel);
 
-      createPointFromInternalCoord(
-        coord: Coordinate,
-        exemplar: Geometry
-      ): Point;
+      createPointFromInternalCoord(coord: Coordinate, exemplar: Geometry): Point;
       /**
        * Creates a Geometry with the same extent as the given envelope. The Geometry returned is guaranteed to be valid. To provide this behaviour, the following cases occur:
        *
@@ -1009,11 +973,7 @@ declare namespace jsts {
        * @param {int} dimension the dimension of the coordinates in the sequence (if user-specifiable, otherwise ignored)
        * @param {int} measures the number of measures of the coordinates in the sequence (if user-specifiable, otherwise ignored)
        */
-      create(
-        size: number,
-        dimension: number,
-        measures: number
-      ): CoordinateSequence;
+      create(size: number, dimension: number, measures: number): CoordinateSequence;
     }
 
     /**
@@ -1059,12 +1019,7 @@ declare namespace jsts {
        *          q2 another extremal point of the envelope Q.
        * @return {boolean} <code>true</code> if Q intersects P.
        */
-      static intersectsEnvelope(
-        p1: Coordinate,
-        p2: Coordinate,
-        q1: Coordinate,
-        q2: Coordinate
-      ): boolean;
+      static intersectsEnvelope(p1: Coordinate, p2: Coordinate, q1: Coordinate, q2: Coordinate): boolean;
 
       /**
        * Creates an <code>Envelope</code> for a region defined by maximum and
@@ -2115,6 +2070,51 @@ declare namespace jsts {
       equals(o: Object): boolean;
 
       /**
+       * Computes a buffer area around this geometry having the given width.
+       * The buffer of a Geometry is the Minkowski sum or difference of the geometry with a disc of radius abs(distance).
+       * Mathematically-exact buffer area boundaries can contain circular arcs.
+       * To represent these arcs using linear geometry they must be approximated with line segments.
+       * The buffer geometry is constructed using 8 segments per quadrant to approximate the circular arcs.
+       * The end cap style is CAP_ROUND.
+       * The buffer operation always returns a polygonal result.
+       * The negative or zero-distance buffer of lines and points is always an empty Polygon.
+       * This is also the result for the buffers of degenerate (zero-area) polygons.
+       *
+       * @param {double} distance the width of the buffer (may be positive, negative or 0)
+       *
+       * @returns a polygonal geometry representing the buffer region (which may be empty)
+       *
+       * @throws {TopologyException} if a robustness error occurs
+       *
+       * @see buffer(double, int)
+       * @see buffer(double, int, int)
+       */
+      buffer(distance: number): Polygon | MultiPolygon;
+
+      /**
+             * Computes a buffer area around this geometry having the given width and
+             * with a specified accuracy of approximation for circular arcs. 
+             * Mathematically-exact buffer area boundaries can contain circular arcs.
+             * To represent these arcs using linear geometry they must be approximated with line segments.
+             * The quadrantSegments argument allows controlling the accuracy of the approximation
+             * by specifying the number of line segments used to represent a quadrant of a circle. 
+             * The buffer operation always returns a polygonal result.
+             * The negative or zero-distance buffer of lines and points is always an empty Polygon.
+             * This is also the result for the buffers of degenerate (zero-area) polygons.
+        
+             * @param {double} distance the width of the buffer (may be positive, negative or 0)
+             * @param {int} quadrantSegments the number of line segments used to represent a quadrant of a circle
+             * 
+             * @returns a polygonal geometry representing the buffer region (which may be empty)
+             * 
+             * @throws {TopologyException} if a robustness error occurs
+             * 
+             * @see #buffer(double)
+             * @see #buffer(double, int, int)
+             */
+      buffer(distance: number, quadrantSegments: number): Polygon | MultiPolygon;
+
+      /**
        * Computes a buffer area around this geometry having the given width and with a
        * specified accuracy of approximation for circular arcs, and using a specified
        * end cap style.
@@ -2155,11 +2155,7 @@ declare namespace jsts {
        * @see #buffer(double, int)
        * @see BufferOp
        */
-      buffer(
-        distance: number,
-        quadrantSegments: number,
-        endCapStyle: number
-      ): Polygon | MultiPolygon;
+      buffer(distance: number, quadrantSegments: number, endCapStyle: number): Polygon | MultiPolygon;
 
       /**
        * Computes the smallest convex <code>Polygon</code> that contains all the
@@ -2511,15 +2507,9 @@ declare namespace jsts {
     }
 
     export class IntersectionMatrix {
-      static matches(
-        actualDimensionValue: number,
-        requiredDimensionSymbol: string
-      ): boolean;
+      static matches(actualDimensionValue: number, requiredDimensionSymbol: string): boolean;
 
-      static matches(
-        actualDimensionSymbols: string,
-        requiredDimensionSymbols: string
-      ): boolean;
+      static matches(actualDimensionSymbols: string, requiredDimensionSymbols: string): boolean;
 
       static isTrue(actualDimensionValue: number): boolean;
 
@@ -2539,28 +2529,15 @@ declare namespace jsts {
 
       setAtLeast(row: number, col: number, dimensionValue: number): void;
 
-      setAtLeastIfValid(
-        row: number,
-        col: number,
-        minimumDimensionValue: number
-      ): void;
+      setAtLeastIfValid(row: number, col: number, minimumDimensionValue: number): void;
 
       isWithin(): boolean;
 
-      isTouches(
-        dimensionOfGeometryA: number,
-        dimensionOfGeometryB: number
-      ): boolean;
+      isTouches(dimensionOfGeometryA: number, dimensionOfGeometryB: number): boolean;
 
-      isOverlaps(
-        dimensionOfGeometryA: number,
-        dimensionOfGeometryB: number
-      ): boolean;
+      isOverlaps(dimensionOfGeometryA: number, dimensionOfGeometryB: number): boolean;
 
-      isEquals(
-        dimensionOfGeometryA: number,
-        dimensionOfGeometryB: number
-      ): boolean;
+      isEquals(dimensionOfGeometryA: number, dimensionOfGeometryB: number): boolean;
 
       toString(): string;
 
@@ -2571,27 +2548,14 @@ declare namespace jsts {
       transpose(): IntersectionMatrix;
 
       matches(
-        requiredDimensionSymbols: [
-          string,
-          string,
-          string,
-          string,
-          string,
-          string,
-          string,
-          string,
-          string
-        ]
+        requiredDimensionSymbols: [string, string, string, string, string, string, string, string, string]
       ): boolean;
 
       add(im: IntersectionMatrix): void;
 
       isDisjoint(): boolean;
 
-      isCrosses(
-        dimensionOfGeometryA: number,
-        dimensionOfGeometryB: number
-      ): boolean;
+      isCrosses(dimensionOfGeometryA: number, dimensionOfGeometryB: number): boolean;
 
       constructor(elements?: string[]);
 
@@ -2665,11 +2629,7 @@ declare namespace jsts {
        *
        * @deprecated Use GeometryFactory instead
        */
-      constructor(
-        lineStrings: LineString[],
-        precisionModel: PrecisionModel,
-        SRID: number
-      );
+      constructor(lineStrings: LineString[], precisionModel: PrecisionModel, SRID: number);
       /**
        * Returns true if the two Geometrys are exactly equal, up to a specified distance tolerance.
        */
@@ -2729,11 +2689,7 @@ declare namespace jsts {
        *
        * @deprecated Use GeometryFactory instead
        */
-      constructor(
-        points: Point[],
-        precisionModel: PrecisionModel,
-        SRID: number
-      );
+      constructor(points: Point[], precisionModel: PrecisionModel, SRID: number);
       /**
        * Returns true if the two Geometrys are exactly equal, up to a specified distance tolerance.
        */
@@ -2821,51 +2777,21 @@ declare namespace jsts {
       export class AffineTransformation {
         static translationInstance(x: number, y: number): AffineTransformation;
 
-        static shearInstance(
-          xShear: number,
-          yShear: number
-        ): AffineTransformation;
+        static shearInstance(xShear: number, yShear: number): AffineTransformation;
 
-        static reflectionInstance(
-          x0: number,
-          y0: number,
-          x1?: number,
-          y1?: number
-        ): AffineTransformation;
+        static reflectionInstance(x0: number, y0: number, x1?: number, y1?: number): AffineTransformation;
 
         static rotationInstance(theta: number): AffineTransformation;
 
-        static rotationInstance(
-          sinTheta: number,
-          cosTheta: number
-        ): AffineTransformation;
+        static rotationInstance(sinTheta: number, cosTheta: number): AffineTransformation;
 
-        static rotationInstance(
-          theta: number,
-          x: number,
-          y: number
-        ): AffineTransformation;
+        static rotationInstance(theta: number, x: number, y: number): AffineTransformation;
 
-        static rotationInstance(
-          sinTheta: number,
-          cosTheta: number,
-          x: number,
-          y: number
-        ): AffineTransformation;
+        static rotationInstance(sinTheta: number, cosTheta: number, x: number, y: number): AffineTransformation;
 
-        static scaleInstance(
-          xScale: number,
-          yScale: number,
-          x?: number,
-          y?: number
-        ): AffineTransformation;
+        static scaleInstance(xScale: number, yScale: number, x?: number, y?: number): AffineTransformation;
 
-        setToReflectionBasic(
-          x0: number,
-          y0: number,
-          x1: number,
-          y1: number
-        ): AffineTransformation;
+        setToReflectionBasic(x0: number, y0: number, x1: number, y1: number): AffineTransformation;
 
         getInverse(): AffineTransformation;
 
@@ -2898,18 +2824,9 @@ declare namespace jsts {
 
         setToRotation(sinTheta: number, cosTheta: number): AffineTransformation;
 
-        setToRotation(
-          theta: number,
-          x: number,
-          y: number
-        ): AffineTransformation;
+        setToRotation(theta: number, x: number, y: number): AffineTransformation;
 
-        setToRotation(
-          sinTheta: number,
-          cosTheta: number,
-          x: number,
-          y: number
-        ): AffineTransformation;
+        setToRotation(sinTheta: number, cosTheta: number, x: number, y: number): AffineTransformation;
 
         getMatrixEntries(): [number, number, number, number, number, number];
 
@@ -2921,12 +2838,7 @@ declare namespace jsts {
 
         rotate(theta: number, x: number, y: number): AffineTransformation;
 
-        rotate(
-          sinTheta: number,
-          cosTheta: number,
-          x: number,
-          y: number
-        ): AffineTransformation;
+        rotate(sinTheta: number, cosTheta: number, x: number, y: number): AffineTransformation;
 
         getDeterminant(): number;
 
@@ -2942,12 +2854,7 @@ declare namespace jsts {
 
         setToReflection(x: number, y: number): AffineTransformation;
 
-        setToReflection(
-          x0: number,
-          y0: number,
-          x1: number,
-          y1: number
-        ): AffineTransformation;
+        setToReflection(x0: number, y0: number, x1: number, y1: number): AffineTransformation;
 
         toString(): string;
 
@@ -2961,23 +2868,11 @@ declare namespace jsts {
 
         transform(seq: CoordinateSequence, i: number): void;
 
-        reflect(
-          x0: number,
-          y0: number,
-          x1?: number,
-          y1?: number
-        ): AffineTransformation;
+        reflect(x0: number, y0: number, x1?: number, y1?: number): AffineTransformation;
 
         constructor(trans?: AffineTransformation);
 
-        constructor(
-          m00: number,
-          m01: number,
-          m02: number,
-          m10: number,
-          m11: number,
-          m12: number
-        );
+        constructor(m00: number, m01: number, m02: number, m10: number, m11: number, m12: number);
 
         constructor(
           src0: Coordinate,
@@ -3147,10 +3042,7 @@ declare namespace jsts {
        *    (positive is to the left, negative is to the right)
        * @return {jsts.geom.Coordinate} the point at that distance and offset
        */
-      pointAlongOffset(
-        segmentLengthFraction: number,
-        offsetDistance: number
-      ): Coordinate;
+      pointAlongOffset(segmentLengthFraction: number, offsetDistance: number): Coordinate;
 
       /**
        * Computes the Projection Factor for the projection of the point p onto this
@@ -3328,6 +3220,14 @@ declare namespace jsts {
       constructor(geometryFactory?: jsts.geom.GeometryFactory);
       read(geometry: any /* ol.geom.Geometry */): jsts.geom.Geometry;
       write(geometry: jsts.geom.Geometry): any /* ol.geom.Geometry */;
+      inject(point: any /* ol.geom.Point */, 
+                LineString: any /* ol.geom.LineString */, 
+                LinearRing: any /* ol.geom.LinearRing */, 
+                Polygon: any /* ol.geom.Polygon */, 
+                MultiPoint: any /* ol.geom.MultiPoint */, 
+                MultiLineString: any /* ol.geom.MultiLineString */, 
+                MultiPolygon: any /* ol.geom.MultiPolygon */, 
+                GeometryCollection: any /* ol.geom.GeometryCollection */): void;
     }
 
     export class GeoJSONReader {
@@ -3451,11 +3351,7 @@ declare namespace jsts {
 
       constructor(g0: Geometry, g1?: Geometry);
 
-      constructor(
-        g0: Geometry,
-        g1: Geometry,
-        boundaryNodeRule: BoundaryNodeRule
-      );
+      constructor(g0: Geometry, g1: Geometry, boundaryNodeRule: BoundaryNodeRule);
     }
 
     namespace valid {
@@ -3486,11 +3382,7 @@ declare namespace jsts {
 
         static equalsTopo(g1: Geometry, g2: Geometry): boolean;
 
-        static relate(
-          g1: Geometry,
-          g2: Geometry,
-          boundaryNodeRule?: BoundaryNodeRule
-        ): IntersectionMatrix;
+        static relate(g1: Geometry, g2: Geometry, boundaryNodeRule?: BoundaryNodeRule): IntersectionMatrix;
 
         static overlaps(g1: Geometry, g2: Geometry): boolean;
 
@@ -3500,15 +3392,12 @@ declare namespace jsts {
 
         getIntersectionMatrix(): IntersectionMatrix;
 
-        constructor(
-          g1: Geometry,
-          g2: Geometry,
-          boundaryNodeRule?: BoundaryNodeRule
-        );
+        constructor(g1: Geometry, g2: Geometry, boundaryNodeRule?: BoundaryNodeRule);
       }
     }
 
     namespace buffer {
+      import Coordinate = jsts.geom.Coordinate;
       import Geometry = jsts.geom.Geometry;
       import PrecisionModel = jsts.geom.PrecisionModel;
 
@@ -3568,12 +3457,7 @@ declare namespace jsts {
          *
          * @constructor
          */
-        constructor(
-          quadrantSegments?: number,
-          endCapStyle?: number,
-          joinStyle?: number,
-          mitreLimit?: number
-        );
+        constructor(quadrantSegments?: number, endCapStyle?: number, joinStyle?: number, mitreLimit?: number);
 
         /**
          * Gets the number of quadrant segments which will be used
@@ -3783,11 +3667,7 @@ declare namespace jsts {
          *
          * @return {double} a scale factor for the buffer computation.
          */
-        static precisionScaleFactor(
-          g: Geometry,
-          distance: number,
-          maxPrecisionDigits: number
-        ): number;
+        static precisionScaleFactor(g: Geometry, distance: number, maxPrecisionDigits: number): number;
 
         /**
          * Computes the buffer of a geometry for a given buffer distance.
@@ -3813,11 +3693,7 @@ declare namespace jsts {
          * @return {Geometry} the buffer of the input geometry.
          *
          */
-        static bufferOp2(
-          g: Geometry,
-          distance: number,
-          params: BufferParameters
-        ): Geometry;
+        static bufferOp2(g: Geometry, distance: number, params: BufferParameters): Geometry;
 
         /**
          * Computes the buffer for a geometry for a given buffer distance and accuracy
@@ -3833,11 +3709,7 @@ declare namespace jsts {
          * @return {Geometry} the buffer of the input geometry.
          *
          */
-        static bufferOp3(
-          g: Geometry,
-          distance: number,
-          quadrantSegments: number
-        ): Geometry;
+        static bufferOp3(g: Geometry, distance: number, quadrantSegments: number): Geometry;
 
         /**
          * Computes the buffer for a geometry for a given buffer distance and accuracy
@@ -3855,12 +3727,7 @@ declare namespace jsts {
          * @return {Geometry} the buffer of the input geometry.
          *
          */
-        static bufferOp4(
-          g: Geometry,
-          distance: number,
-          quadrantSegments: number,
-          endCapStyle: number
-        ): Geometry;
+        static bufferOp4(g: Geometry, distance: number, quadrantSegments: number, endCapStyle: number): Geometry;
 
         /**
          * Specifies the end cap style of the generated buffer. The styles supported are
@@ -3901,6 +3768,58 @@ declare namespace jsts {
          */
         bufferFixedPrecision(fixedPM: PrecisionModel): void;
       }
+
+       /**
+             * Computes the raw offset curve for a single Geometry component (ring, line or point). A raw offset curve line is not 
+             * noded - it may contain self-intersections (and usually will). The final buffer polygon is computed by forming a 
+             * topological graph of all the noded raw curves and tracing outside contours. The points in the raw curve are rounded 
+             * to a given PrecisionModel.
+             */
+            export class OffsetCurveBuilder {
+                
+                constructor(precisionModel: PrecisionModel, bufParams: BufferParameters);
+
+                /**
+                 * Gets the buffer parameters being used to generate the curve.
+                 * @return {BufferParameters} the buffer parameters being used
+                 */
+                getBufferParameters(): BufferParameters;
+
+                /**
+                 * This method handles single points as well as LineStrings. LineStrings are assumed not to be closed 
+                 * (the function will not fail for closed lines, but will generate superfluous line caps).
+                 * @param {Coordinate[]} inputPts - the vertices of the line to offset
+                 * @param {number} distance - the offset distance
+                 * @return {Coordinate[]} a Coordinate array representing the curve or null if the curve is empty
+                 */
+                getLineCurve(inputPts: Coordinate[], distance: number): Coordinate[];
+
+                /**
+                 * Tests whether the offset curve for line or point geometries at the given offset distance is empty (does not exist).
+                 * This is the case if:
+                 * - the distance is zero,
+                 * - the distance is negative, except for the case of singled-sided buffers.
+                 * @param {number} distance - the offset curve distance
+                 * @return {boolean} true if the offset curve is empty
+                 */
+                isLineOffsetEmpty(distance: number): boolean;
+
+                /**
+                 * This method handles the degenerate cases of single points and lines, as well as valid rings.
+                 * @param {Coordinate[]} inputPts - the coordinates of the ring (must not contain repeated points)
+                 * @param {number} side - the side Position of the ring on which to construct the buffer line
+                 * @param {number} distance - the positive distance at which to create the offset
+                 * @return {Coordinate[]} a Coordinate array representing the curve, or null if the curve is empty
+                 */
+                getRingCurve(inputPts: Coordinate[], side: number, distance: number): Coordinate[];
+
+                /**
+                 * @param {Coordinate[]} inputPts - the coordinates to offset
+                 * @param {number} distance - the distance at which to create the offset
+                 * @return {Coordinate[]} a Coordinate array representing the offset curve, or null if the curve is empty
+                 */
+                getOffsetCurve(inputPts: Coordinate[], distance: number): Coordinate[];
+            }
     }
 
     namespace distance {
@@ -3950,11 +3869,7 @@ declare namespace jsts {
          *
          * @returns true if g0.distance(g1) <= distance
          */
-        static isWithinDistance(
-          g0: Geometry,
-          g1: Geometry,
-          distance: number
-        ): boolean;
+        static isWithinDistance(g0: Geometry, g1: Geometry, distance: number): boolean;
 
         /**
          * Compute the the nearest points of two geometries.
@@ -3962,10 +3877,7 @@ declare namespace jsts {
          *
          * @returns the nearest points in the geometries
          */
-        static nearestPoints(
-          g0: Geometry,
-          g1: Geometry
-        ): [Coordinate, Coordinate];
+        static nearestPoints(g0: Geometry, g1: Geometry): [Coordinate, Coordinate];
 
         /**
          * Report the distance between the nearest points on the input geometries.
@@ -4053,6 +3965,143 @@ declare namespace jsts {
         toString(): string;
       }
     }
+     namespace linearref {
+        import Geometry = jsts.geom.Geometry;
+        import Coordinate = jsts.geom.Coordinate;
+
+        /**
+         * Supports linear referencing along a linear Geometry using the length along the line as 
+         * the index. Negative length values are taken as measured in the reverse direction from 
+         * the end of the geometry. Out-of-range index values are handled by clamping them to the
+         * valid range of values. Non-simple lines (i.e. which loop back to cross or touch 
+         * themselves) are supported.
+         */
+        export class LengthIndexedLine {
+
+            /**
+             * Constructs an object which allows a linear Geometry to be linearly referenced 
+             * using length as an index.
+             * 
+             * @param {Geometry} linearGeom the linear geometry to reference along
+             */
+            constructor(linearGeom: Geometry);
+
+            /**
+             * Computes the Coordinate for the point on the line at the given index. If the 
+             * index is out of range the first or last point on the line will be returned. 
+             * The Z-ordinate of the computed point will be interpolated from the Z-ordinates 
+             * of the line segment containing it, if they exist.
+             * 
+             * @param {number} index the index of the desired point
+             * @return {Coordinate} the Coordinate at the given index
+             */
+            extractPoint(index: number): Coordinate;
+
+            /**
+             * Computes the Coordinate for the point on the line at the given index, offset
+             * by the given distance. If the index is out of range the first or last point 
+             * on the line will be returned. The computed point is offset to the left of the 
+             * line if the offset distance is positive, to the right if negative. The 
+             * Z-ordinate of the computed point will be interpolated from the Z-ordinates 
+             * of the line segment containing it, if they exist.
+             * 
+             * @param {number} index the index of the desired point
+             * @param {number} offsetDistance the index of the desired point
+             * @return {Coordinate} the Coordinate at the given index
+             */
+            extractPoint(index: number, offsetDistance: number): Coordinate;
+
+            /**
+             * Computes the LineString for the interval on the line between the given 
+             * indices. If the endIndex lies before the startIndex, the computed 
+             * geometry is reversed.
+             * 
+             * @param {number} startIndex the index of the start of the interval
+             * @param {number} endIndex the index of the end of the interval
+             * @return {Geometry} the linear interval between the indices
+             */
+            extractLine(startIndex: number, endIndex: number): Geometry;
+
+            /**
+             * Computes the minimum index for a point on the line. If the line is not 
+             * simple (i.e. loops back on itself) a single point may have more than one 
+             * possible index. In this case, the smallest index is returned. The supplied 
+             * point does not necessarily have to lie precisely on the line, but if it 
+             * is far from the line the accuracy and performance of this function is not 
+             * guaranteed. Use project(org.locationtech.jts.geom.Coordinate) to compute 
+             * a guaranteed result for points which may be far from the line.
+             * 
+             * @param {Coordinate} pt a point on the line
+             * @return {number} the minimum index of the point
+             */
+            indexOf(pt: Coordinate): number;
+
+            /**
+             * Finds the index for a point on the line which is greater than the given 
+             * index. If no such index exists, returns minIndex. This method can be used 
+             * to determine all indexes for a point which occurs more than once on a 
+             * non-simple line. It can also be used to disambiguate cases where the given 
+             * point lies slightly off the line and is equidistant from two different 
+             * points on the line. The supplied point does not necessarily have to lie 
+             * precisely on the line, but if it is far from the line the accuracy and 
+             * performance of this function is not guaranteed. Use 
+             * project(org.locationtech.jts.geom.Coordinate) to compute a guaranteed 
+             * result for points which may be far from the line.
+             * 
+             * @param {Coordinate} pt a point on the line
+             * @param {number} minIndex the value the returned index must be greater than
+             * @return {number} the index of the point greater than the given minimum index
+             */
+            indexOf(pt: Coordinate, minIndex: number): number;
+
+            /**
+             * Computes the indices for a subline of the line. (The subline must conform 
+             * to the line; that is, all vertices in the subline (except possibly the 
+             * first and last) must be vertices of the line and occur in the same order).
+             * 
+             * @param {Geometry} subLine a subLine of the line
+             * @return {number[]} a pair of indices for the start and end of the subline.
+             */
+            indicesOf(startIndex: number, endIndex: number): number[];
+
+            /**
+             * Computes the index for the closest point on the line to the given point. 
+             * If more than one point has the closest distance the first one along the 
+             * line is returned. (The point does not necessarily have to lie precisely 
+             * on the line.)
+             * 
+             * @param {Coordinate} pt a point on the line
+             * @return {number} the index of the point
+             */
+            project(startIndex: number, endIndex: number): Geometry;
+            
+            /**
+             * Returns the index of the start of the line.
+             * @return {number} the start index
+             */
+            getStartIndex(): number;
+
+            /**
+             * Returns the index of the end of the line.
+             * @return {number} the end index
+             */
+            getEndIndex(): number;
+
+            /**
+             * Tests whether an index is in the valid index range for the line.
+             * @param {number} index - the index to test
+             * @return {boolean} true if the index is in the valid range
+             */
+            isValidIndex(index: number): boolean;
+
+            /**
+             * Computes a valid index for this line by clamping the given index to the valid range of index values.
+             * @param {number} index - the index to clamp
+             * @return {number} a valid index value
+             */
+            clampIndex(index: number): number;
+        }
+    }
   }
 
   namespace precision {
@@ -4129,34 +4178,8 @@ declare namespace jsts {
       constructor(geom: geom.Geometry, alpha: number);
       constructor(geom: geom.Geometry, controlPoints: geom.Geometry);
       static bezierCurve(geom: geom.Geometry, alpha: number): geom.Geometry;
-      static bezierCurve(
-        geom: geom.Geometry,
-        alpha: number,
-        skew: number
-      ): geom.Geometry;
-      static bezierCurve(
-        geom: geom.Geometry,
-        controlPoints: geom.Geometry
-      ): geom.Geometry;
-    }
-  }
-
-  namespace util {
-    export class GeometricShapeFactory {
-      constructor();
-      setEvelop(e: geom.Envelope): void;
-      setCentre(c: geom.Coordinate): void;
-      setWidth(n: number): void;
-      setHeight(n: number): void;
-      setBase(c: geom.Coordinate): void;
-      setRotation(r: number): void;
-      setNumPoints(n: number): void;
-      createEllipse(): geom.Polygon;
-      createSquircle(): geom.Polygon;
-      createRectangle(): geom.Polygon;
-      createArc(startAngle: number, angleExtend: number): geom.LineString;
-      createArcPolygon(startAngle: number, angleExtend: number): geom.Polygon;
-      rotate(geom: geom.Geometry): geom.Geometry;
+      static bezierCurve(geom: geom.Geometry, alpha: number, skew: number): geom.Geometry;
+      static bezierCurve(geom: geom.Geometry, controlPoints: geom.Geometry): geom.Geometry;
     }
   }
 
@@ -4218,8 +4241,191 @@ declare namespace jsts {
       getResultGeometry(): Geometry;
     }
   }
+
+  namespace util {
+    export class GeometricShapeFactory {
+      constructor();
+      setEvelop(e: geom.Envelope): void;
+      setCentre(c: geom.Coordinate): void;
+      setWidth(n: number): void;
+      setHeight(n: number): void;
+      setBase(c: geom.Coordinate): void;
+      setRotation(r: number): void;
+      setNumPoints(n: number): void;
+      createEllipse(): geom.Polygon;
+      createSquircle(): geom.Polygon;
+      createRectangle(): geom.Polygon;
+      createArc(startAngle: number, angleExtend: number): geom.LineString;
+      createArcPolygon(startAngle: number, angleExtend: number): geom.Polygon;
+      rotate(geom: geom.Geometry): geom.Geometry;
+    }
+    /**
+     * An extendable array of primitive int values.
+     */
+    export class IntArrayList {
+      /**
+       * Constructs an empty list.
+       */
+      constructor();
+      /**
+       * Constructs an empty list with the specified initial capacity
+       *
+       * @param initialCapacity {integer} the initial capacity of the list
+       */
+      constructor(initialCapacity: number);
+
+      /**
+       * Returns the number of values in this list.
+       */
+      size(): number;
+
+      /**
+       * Increases the capacity of this list instance, if necessary,
+       * to ensure that it can hold at least the number of elements specified by the capacity argument.
+       *
+       * @param capacity {integer} the desired capacity
+       */
+      ensureCapacity(capacity: number): void;
+
+      /**
+       * Adds a value to the end of this list.
+       *
+       * @param value {integer} the value to add
+       */
+      add(value: number): void;
+
+      /**
+       * Adds all values in an array to the end of this list.
+       *
+       * @param values an array of values
+       */
+      addAll(values: number[]): void;
+
+      /**
+       * Returns a int array containing a copy of the values in this list.
+       */
+      toArray(): number[];
+    }
+  }
+}
+declare namespace java {
+  namespace utils {
+    export class Iterator<T> {
+      /**
+       * Returns true if the iteration has more elements.
+       * @return {boolean}
+       */
+      hasNext(): boolean;
+
+      /**
+       * Returns the next element in the iteration.
+       * @return {T}
+       */
+      next(): T;
+
+      /**
+       * Removes from the underlying collection the last element returned by the
+       * iterator (optional operation).
+       */
+      remove(): void;
+    }
+    export class Comparator<T> {
+      compare(a: T, b: T): number;
+    }
+    export class Collection<T> {
+      /**
+       * Ensures that this collection contains the specified element (optional
+       * operation).
+       * @param {T} e
+       * @return {boolean}
+       */
+      add(e: T): boolean;
+      /**
+       * Appends all of the elements in the specified collection to the end of this
+       * list, in the order that they are returned by the specified collection's
+       * iterator (optional operation).
+       * @param {javascript.util.Collection} c
+       * @return {boolean}
+       */
+      addAll(c: Collection<T>): boolean;
+      /**
+       * Returns true if this collection contains no elements.
+       * @return {boolean}
+       */
+      isEmpty(): boolean;
+      /**
+       * Returns an iterator over the elements in this collection.
+       * @return {javascript.util.Iterator}
+       */
+      iterator(): Iterator<T>;
+      /**
+       * Returns an iterator over the elements in this collection.
+       * @return {number}
+       */
+      size(): number;
+      /**
+       * Returns an array containing all of the elements in this collection.
+       * @return {Array}
+       */
+      toArray(): Array<T>;
+      /**
+       * Removes a single instance of the specified element from this collection if it
+       * is present. (optional)
+       * @param {Object} e
+       * @return {boolean}
+       */
+      remove(e: T): boolean;
+    }
+    export class List<T> extends Collection<T> {
+      /**
+       * Returns the element at the specified position in this list.
+       * @param {number} index
+       * @return {T}
+       */
+      get(index: number): T;
+      /**
+       * Replaces the element at the specified position in this list with the
+       * specified element (optional operation).
+       * @param {number} index
+       * @param {Object} e
+       * @return {Object}
+       */
+      set(index: number, e: T): T;
+    }
+    export class ArrayList<T> extends List<T> {
+      constructor(c?: Collection<T>);
+
+      /**
+       * Increases the capacity of this list instance, if necessary,
+       * to ensure that it can hold at least the number of elements specified by the capacity argument.
+       *
+       * @param capacity {integer} the desired capacity
+       */
+      ensureCapacity(capacity: number): void;
+
+      /**
+       * Empties this list
+       */
+      clear(): void;
+
+      sort(comparator: Comparator<T>): void;
+    }
+    export class Set<T> extends Collection<T> {
+      /**
+       * Returns true if this set contains the specified element. More formally,
+       * returns true if and only if this set contains an element e such that (o==null ?
+       * e==null : o.equals(e)).
+       * @param {T} e
+       * @return {boolean}
+       */
+      contains(e: T): boolean;
+    }
+    export class HashSet<T> extends Set<T> {
+      constructor(c?: Collection<T>);
+    }
+  }
 }
 
-declare module "@volterainc/jsts" {
+declare module '@volterainc/jsts' {
   export = jsts;
 }
